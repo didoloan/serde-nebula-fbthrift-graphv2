@@ -28,11 +28,19 @@ pub fn deserialize_execution_response<'de, D: Deserialize<'de>>(
         None => Vec::new()
     };
 
-    for row in rows.iter() {
-        let mut data_deserializer = DataDeserializer::new(&names,row.values);
+    let mut row_iter = rows.into_iter();
 
-        let data = D::deserialize(&mut data_deserializer)?;
-        data_set.push(data);
+    loop {
+        match row_iter.next() {
+            Some(row) => {
+                let mut data_deserializer = DataDeserializer::new(&names,&row.values);
+                let data = D::deserialize(&mut data_deserializer)?;
+                data_set.push(data);
+            },
+            None => {
+                break;
+            }
+        }
     }
 
     Ok(data_set)
